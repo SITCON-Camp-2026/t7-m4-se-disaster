@@ -1,11 +1,23 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "../src/app/App";
 
 describe("App", () => {
+  beforeEach(() => {
+    window.history.pushState({}, "", "/");
+  });
+
   it("renders starter title", () => {
     render(<App />);
     expect(screen.getByText("災害資訊整理工作台")).toBeInTheDocument();
+  });
+
+  it("shows a clear entry to the v1 workbench from the home page", () => {
+    render(<App />);
+
+    expect(
+      screen.getByRole("link", { name: "進入 v1 人工確認工作台" }),
+    ).toHaveAttribute("href", "/v1/");
   });
 
   it("keeps the home page focused on phase 0 tabs", () => {
@@ -41,8 +53,7 @@ describe("App", () => {
         "第一階段的成功不是分類正確，而是把為什麼現在還不能判斷說清楚。",
       ),
     ).toBeInTheDocument();
-    expect(screen.getAllByText("待人工確認").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("未查核").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("未審查").length).toBeGreaterThan(0);
   });
 
   it("shows uncertainty notes for the selected raw record", () => {
@@ -184,5 +195,89 @@ describe("App", () => {
       screen.getByRole("button", { name: "新增這筆草稿" }),
     ).toBeInTheDocument();
     expect(screen.queryByText("已有草稿")).not.toBeInTheDocument();
+  });
+
+  it("renders the v1 workbench at /v1/ with phase 0 source boundaries", () => {
+    window.history.pushState({}, "", "/v1/");
+    render(<App />);
+
+    expect(
+      screen.getByText("人工確認優先的整理草稿工作台"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("v1 / 來源仍是 Phase 0 原始資訊"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("自動讀取")).toBeInTheDocument();
+    expect(screen.getByText("系統提示")).toBeInTheDocument();
+    expect(screen.getByText("下一步行動工作區")).toBeInTheDocument();
+    expect(screen.getAllByText(/可信度/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("流程輸出")).not.toBeInTheDocument();
+  });
+
+  it("lets information organizers create a v1 draft and record human judgement", () => {
+    window.history.pushState({}, "", "/v1/");
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "建立 v1 整理草稿" }));
+    expect(screen.getByLabelText("最後人工確認結果")).toHaveValue(
+      "not_adopted",
+    );
+    expect(screen.getAllByText("暫時不採用").length).toBeGreaterThan(0);
+
+    fireEvent.change(screen.getByLabelText("最後人工確認結果"), {
+      target: { value: "adopt_as_unconfirmed" },
+    });
+    fireEvent.change(screen.getByLabelText("資料可信度"), {
+      target: { value: "confirmed_true" },
+    });
+    fireEvent.change(screen.getByLabelText("判斷者"), {
+      target: { value: "資訊整理者 A" },
+    });
+    fireEvent.change(screen.getByLabelText("人工修正或質疑 AI 預填"), {
+      target: {
+        value: "AI 預填只能當提示，原文沒有足夠地點與安全資訊。",
+      },
+    });
+
+    expect(screen.getAllByText("人工確認為真實").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("資料可信度")).toHaveValue("confirmed_true");
+    expect(screen.getByLabelText("最後人工確認結果")).toHaveValue(
+      "adopt_as_unconfirmed",
+    );
+    expect(screen.getByText(/系統自動提示只會產生高中低/)).toBeInTheDocument();
+    expect(screen.getByDisplayValue("資訊整理者 A")).toBeInTheDocument();
+    expect(
+      screen.getByDisplayValue(
+        "AI 預填只能當提示，原文沒有足夠地點與安全資訊。",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("passes reviewed v1 drafts into the next-action workspace", () => {
+    window.history.pushState({}, "", "/v1/");
+    render(<App />);
+
+    expect(
+      screen.getByText(
+        "最後人工確認結果選「準備下決策」後，資料才會進入這個工作區。",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "建立 v1 整理草稿" }));
+    fireEvent.change(screen.getByLabelText("最後人工確認結果"), {
+      target: { value: "ready_for_decision" },
+    });
+
+    expect(screen.getByText("1 筆待決策")).toBeInTheDocument();
+    expect(screen.getByLabelText("下一步處理方向")).toHaveValue("not_selected");
+
+    fireEvent.change(screen.getByLabelText("下一步處理方向"), {
+      target: { value: "ask_for_key_info" },
+    });
+
+    expect(screen.getByLabelText("下一步處理方向")).toHaveValue(
+      "ask_for_key_info",
+    );
+    expect(screen.getByText(/不自動派工或做真實救災決策/)).toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 export const statusLabels: Record<string, string> = {
-  unverified: "未查核",
-  needs_review: "待人工確認",
+  unverified: "未審查",
+  needs_review: "未審查",
   verified: "已確認",
   rejected: "已拒絕",
   unknown: "未知",

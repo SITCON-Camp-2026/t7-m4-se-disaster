@@ -4,6 +4,7 @@ import { EmptyState } from "../components/EmptyState";
 import { Phase0RawInfoPanel } from "../features/phase-0/Phase0RawInfoPanel";
 import { Phase0Workbench } from "../features/phase-0/Phase0Workbench";
 import type { Phase0MessyRecord } from "../features/phase-0/phase0-types";
+import { V1Workbench } from "../features/v1/V1Workbench";
 
 type TabKey = "raw" | "workbench";
 
@@ -19,10 +20,15 @@ export function App() {
   const [selectedRecordId, setSelectedRecordId] = useState(
     phase0Records[0]?.id ?? "",
   );
+  const isV1Route = window.location.pathname.endsWith("/v1/");
 
   function selectForWorkbench(recordId: string) {
     setSelectedRecordId(recordId);
     setActiveTab("workbench");
+  }
+
+  if (isV1Route) {
+    return <V1Workbench records={phase0Records} />;
   }
 
   return (
@@ -34,6 +40,9 @@ export function App() {
           第一階段先用 coding agent
           做出可展示的前端原型，再從成果中看見資料品質、角色、狀態與來源的限制。
         </p>
+        <a className="hero__link" href="/v1/">
+          進入 v1 人工確認工作台
+        </a>
       </header>
 
       <nav className="tabs" aria-label="第一階段工作區">
