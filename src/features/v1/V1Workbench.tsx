@@ -66,6 +66,7 @@ const nextActionLabels: Record<NextActionDecision, string> = {
   handoff_for_decision: "交給人工決策",
   do_not_dispatch: "暫不派工",
 };
+const baseUrl = import.meta.env.BASE_URL;
 
 const decisionChecklistItems: Array<{
   id: DecisionChecklistItem;
@@ -321,7 +322,7 @@ export function V1Workbench({ records }: { records: Phase0MessyRecord[] }) {
             這裡輸出的不是已確認任務，也不是救災行動決策。
           </p>
         </div>
-        <a href="/">回到 Phase 0 首頁</a>
+        <a href={baseUrl}>回到 Phase 0 首頁</a>
       </header>
 
       <section className="v1-summary" aria-label="v1 狀態摘要">

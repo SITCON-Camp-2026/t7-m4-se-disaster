@@ -214,6 +214,15 @@ describe("App", () => {
     expect(screen.queryByText("流程輸出")).not.toBeInTheDocument();
   });
 
+  it("renders v1 under a GitHub Pages project path", () => {
+    window.history.pushState({}, "", "/t7-m4-se-disaster/v1/");
+    render(<App />);
+
+    expect(
+      screen.getByText("人工確認優先的整理草稿工作台"),
+    ).toBeInTheDocument();
+  });
+
   it("lets information organizers create a v1 draft and record human judgement", () => {
     window.history.pushState({}, "", "/v1/");
     render(<App />);

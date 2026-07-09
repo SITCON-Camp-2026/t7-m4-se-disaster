@@ -14,13 +14,19 @@ const tabs: Array<{ key: TabKey; label: string }> = [
 ];
 
 const phase0Records = messyReports satisfies Phase0MessyRecord[];
+const baseUrl = import.meta.env.BASE_URL;
+
+function joinBaseUrl(path: string) {
+  return `${baseUrl}${path}`.replace(/\/{2,}/g, "/");
+}
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabKey>("raw");
   const [selectedRecordId, setSelectedRecordId] = useState(
     phase0Records[0]?.id ?? "",
   );
-  const isV1Route = window.location.pathname.endsWith("/v1/");
+  const normalizedPath = window.location.pathname.replace(/\/$/, "");
+  const isV1Route = normalizedPath.endsWith("/v1");
 
   function selectForWorkbench(recordId: string) {
     setSelectedRecordId(recordId);
@@ -40,7 +46,7 @@ export function App() {
           第一階段先用 coding agent
           做出可展示的前端原型，再從成果中看見資料品質、角色、狀態與來源的限制。
         </p>
-        <a className="hero__link" href="/v1/">
+        <a className="hero__link" href={joinBaseUrl("v1/")}>
           進入 v1 人工確認工作台
         </a>
       </header>
