@@ -33,6 +33,8 @@
 | 2026-07-09 | Phase 0    | 新增草稿自動預填按鈕             | 建議用前端關鍵字規則預填可能類型、信心程度與下一步                                                               | 採用        | 自動預填只是起點，不呼叫真實 AI API，也不代表資訊已確認；使用者仍需人工修正                | `src/features/phase-0/Phase0Workbench.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx` |
 | 2026-07-09 | Release 01 | 使用 persona sub-agent 模擬訪談  | 啟用三個 sub-agent 分別扮演回報者、資訊整理者、行動者，依固定格式指出看不懂、最怕錯誤與不敢相信的資訊            | 部分採用    | 採用共同風險與疑問作為需求分析草稿；不把 AI 模擬回饋當成實際訪談或 v1 定案需求             | `docs/interview-notes.md`, `docs/interview-summary.md`, `docs/decisions.md`                     |
 | 2026-07-09 | Release 01 | 彙整訪談與需求取捨               | 建議 v1 暫定優先服務資訊整理者，並把自動預填、信心程度、下一步語氣列為誤導風險                                   | 部分採用    | 暫定方向符合 Phase 0 工作台現況，但仍需人類與小隊確認；拒絕直接把 persona 回饋轉成功能清單 | `docs/interview-summary.md`, `docs/decisions.md`                                                |
+| 2026-07-09 | Release 02 | 產生資訊流程與 Mermaid 流程圖    | 根據需求取捨決策，建議流程從原始資訊開始，加入人工確認、不能直接變成任務、候選草稿仍未確認與判斷紀錄             | 部分採用    | 採用為流程設計草稿；仍需學員用 VS Code 預覽 Mermaid，並人工確認流程是否符合實際整理工作    | `docs/flow.md`                                                                                  |
+| 2026-07-09 | Release 02 | 調整流程為自動初判與最後確認     | 建議系統自動讀取來源、原文、時間與查核狀態，先標出缺漏、敏感風險與卡住原因，人工只在最後確認與修正               | 採用        | 採用自動化初判以降低整理者負擔；但最後採用、不採用與查核狀態仍保留人工確認，避免 AI 判真偽 | `docs/flow.md`                                                                                  |
 
 ## 範例
 
