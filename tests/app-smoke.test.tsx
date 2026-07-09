@@ -2,6 +2,13 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "../src/app/App";
 
+function unlockV1Workbench() {
+  fireEvent.change(screen.getByLabelText("密碼"), {
+    target: { value: "123456" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "進入工作台" }));
+}
+
 describe("App", () => {
   beforeEach(() => {
     window.history.pushState({}, "", "/");
@@ -200,6 +207,7 @@ describe("App", () => {
   it("renders the v1 workbench at /v1/ with phase 0 source boundaries", () => {
     window.history.pushState({}, "", "/v1/");
     render(<App />);
+    unlockV1Workbench();
 
     expect(
       screen.getByText("人工確認優先的整理草稿工作台"),
@@ -217,6 +225,33 @@ describe("App", () => {
   it("renders v1 under a GitHub Pages project path", () => {
     window.history.pushState({}, "", "/t7-m4-se-disaster/v1/");
     render(<App />);
+    unlockV1Workbench();
+
+    expect(
+      screen.getByText("人工確認優先的整理草稿工作台"),
+    ).toBeInTheDocument();
+  });
+
+  it("requires the v1 password before showing the workbench", () => {
+    window.history.pushState({}, "", "/v1/");
+    render(<App />);
+
+    expect(screen.getByText("請先輸入存取密碼")).toBeInTheDocument();
+    expect(
+      screen.queryByText("人工確認優先的整理草稿工作台"),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("密碼"), {
+      target: { value: "wrong" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "進入工作台" }));
+
+    expect(screen.getByText("密碼不正確，請重新輸入。")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("密碼"), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "進入工作台" }));
 
     expect(
       screen.getByText("人工確認優先的整理草稿工作台"),
@@ -226,6 +261,7 @@ describe("App", () => {
   it("lets information organizers create a v1 draft and record human judgement", () => {
     window.history.pushState({}, "", "/v1/");
     render(<App />);
+    unlockV1Workbench();
 
     fireEvent.click(screen.getByRole("button", { name: "建立 v1 整理草稿" }));
     expect(screen.getByLabelText("最後人工確認結果")).toHaveValue(
@@ -271,6 +307,7 @@ describe("App", () => {
   it("passes reviewed v1 drafts into the next-action workspace", () => {
     window.history.pushState({}, "", "/v1/");
     render(<App />);
+    unlockV1Workbench();
 
     expect(
       screen.getByText(
@@ -303,6 +340,7 @@ describe("App", () => {
   it("requires the decision checklist before passing data forward", () => {
     window.history.pushState({}, "", "/v1/");
     render(<App />);
+    unlockV1Workbench();
 
     fireEvent.click(screen.getByRole("button", { name: "建立 v1 整理草稿" }));
     fireEvent.change(screen.getByLabelText("最後人工確認結果"), {

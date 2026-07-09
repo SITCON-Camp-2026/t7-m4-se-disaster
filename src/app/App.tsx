@@ -15,6 +15,7 @@ const tabs: Array<{ key: TabKey; label: string }> = [
 
 const phase0Records = messyReports satisfies Phase0MessyRecord[];
 const baseUrl = import.meta.env.BASE_URL;
+const v1DemoPassword = "123456";
 
 function joinBaseUrl(path: string) {
   return `${baseUrl}${path}`.replace(/\/{2,}/g, "/");
@@ -25,6 +26,9 @@ export function App() {
   const [selectedRecordId, setSelectedRecordId] = useState(
     phase0Records[0]?.id ?? "",
   );
+  const [v1Password, setV1Password] = useState("");
+  const [isV1Unlocked, setIsV1Unlocked] = useState(false);
+  const [v1PasswordError, setV1PasswordError] = useState("");
   const normalizedPath = window.location.pathname.replace(/\/$/, "");
   const isV1Route = normalizedPath.endsWith("/v1");
 
@@ -34,6 +38,47 @@ export function App() {
   }
 
   if (isV1Route) {
+    if (!isV1Unlocked) {
+      return (
+        <main className="v1-auth-page">
+          <form
+            className="v1-auth-card"
+            onSubmit={(event) => {
+              event.preventDefault();
+
+              if (v1Password === v1DemoPassword) {
+                setIsV1Unlocked(true);
+                setV1PasswordError("");
+                return;
+              }
+
+              setV1PasswordError("密碼不正確，請重新輸入。");
+            }}
+          >
+            <p className="eyebrow">v1 人工確認工作台</p>
+            <h1>請先輸入存取密碼</h1>
+            <p>這是課堂 demo 的前端密碼門檻，不代表真實安全驗證。</p>
+            <label>
+              密碼
+              <input
+                autoComplete="current-password"
+                type="password"
+                value={v1Password}
+                onChange={(event) => setV1Password(event.target.value)}
+              />
+            </label>
+            {v1PasswordError ? (
+              <p className="v1-auth-card__error">{v1PasswordError}</p>
+            ) : null}
+            <div className="v1-auth-card__actions">
+              <button type="submit">進入工作台</button>
+              <a href={baseUrl}>回到 Phase 0 首頁</a>
+            </div>
+          </form>
+        </main>
+      );
+    }
+
     return <V1Workbench records={phase0Records} />;
   }
 

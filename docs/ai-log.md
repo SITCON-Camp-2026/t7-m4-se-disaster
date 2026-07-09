@@ -51,6 +51,7 @@
 | 2026-07-09 | v1 修正    | 新增下一步行動工作區             | 建議在最後人工確認結果新增「準備下決策」，並只把這類草稿傳到下一步工作區選擇處理方向                                          | 採用        | 下一步工作區只整理人工處理方向，不自動派工、不做真實救災決策                                 | `src/features/v1/V1Workbench.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`, `docs/ai-log.md`            |
 | 2026-07-09 | v1 修正    | 新增確認依據與決策前檢查清單     | 建議在資料可信度選「人工確認為真實」時要求填確認依據，並在進入「準備下決策」前完成來源、時間、地點與非自動派工檢查            | 採用        | 讓人工確認留下可檢查依據，避免未確認資料太快流入下一步工作區                                 | `src/features/v1/V1Workbench.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`, `docs/ai-log.md`            |
 | 2026-07-09 | v1 修正    | 修正 GitHub Pages v1 入口        | 建議新增 `v1/index.html` 並讓首頁與 v1 返回連結使用 Vite base URL，避免 GitHub Pages 專案子路徑點擊 `/v1/` 變 404             | 採用        | 只修展示入口與部署路徑，不改資料或流程判斷                                                   | `vite.config.ts`, `v1/index.html`, `src/app/App.tsx`, `src/features/v1/V1Workbench.tsx`, `tests/app-smoke.test.tsx` |
+| 2026-07-09 | v1 修正    | 新增 v1 前端密碼門檻             | 建議進入 v1 前先顯示密碼表單，輸入課堂 demo 密碼後才顯示人工確認工作台                                                        | 採用        | 這只是前端展示門檻，不是正式安全驗證；不加入後端、帳號或真實權限系統                         | `src/app/App.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`, `docs/ai-log.md`                            |
 
 ## 範例
 
