@@ -12,6 +12,7 @@ function unlockV1Workbench() {
 describe("App", () => {
   beforeEach(() => {
     window.history.pushState({}, "", "/");
+    sessionStorage.clear();
   });
 
   it("renders starter title", () => {
