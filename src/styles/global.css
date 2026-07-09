@@ -799,6 +799,38 @@ button {
   grid-column: 1 / -1;
 }
 
+.v1-checklist {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.v1-checklist legend {
+  padding: 0 4px;
+  color: #344054;
+  font-weight: 700;
+}
+
+.v1-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.v1-checklist input {
+  width: 16px;
+  height: 16px;
+}
+
+.v1-checklist p {
+  margin: 0;
+  color: #5f6b7a;
+  line-height: 1.5;
+}
+
 .v1-form-note {
   margin: 0;
   border-radius: 8px;

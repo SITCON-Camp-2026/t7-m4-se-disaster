@@ -49,6 +49,7 @@
 | 2026-07-09 | v1 修正    | 壓縮自動讀取與系統提示留白       | 建議只調整兩張上方卡片的 padding、段落 margin、列表 margin 與提示框行距，不改版面結構                                         | 採用        | 解決底部留白過多，同時保留使用者偏好的上下卡片版面                                           | `src/features/v1/V1Workbench.tsx`, `src/styles/global.css`, `docs/ai-log.md`                              |
 | 2026-07-09 | v1 修正    | 合併頂部統計指標                 | 建議移除「筆留下人工判斷」，只保留 Phase 0 原始資訊數與整理草稿數                                                             | 採用        | 草稿建立後預設暫時不採用，兩個統計容易重複；保留一個草稿數較清楚                             | `src/features/v1/V1Workbench.tsx`, `src/styles/global.css`, `docs/ai-log.md`                              |
 | 2026-07-09 | v1 修正    | 新增下一步行動工作區             | 建議在最後人工確認結果新增「準備下決策」，並只把這類草稿傳到下一步工作區選擇處理方向                                          | 採用        | 下一步工作區只整理人工處理方向，不自動派工、不做真實救災決策                                 | `src/features/v1/V1Workbench.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`, `docs/ai-log.md`  |
+| 2026-07-09 | v1 修正    | 新增確認依據與決策前檢查清單     | 建議在資料可信度選「人工確認為真實」時要求填確認依據，並在進入「準備下決策」前完成來源、時間、地點與非自動派工檢查            | 採用        | 讓人工確認留下可檢查依據，避免未確認資料太快流入下一步工作區                                 | `src/features/v1/V1Workbench.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`, `docs/ai-log.md`  |
 
 ## 範例
 

@@ -15,13 +15,17 @@ type NextActionDecision =
   | "keep_tracking"
   | "handoff_for_decision"
   | "do_not_dispatch";
+type DecisionChecklistItem =
+  "source_checked" | "time_checked" | "location_checked" | "not_auto_dispatch";
 
 type V1Draft = {
   recordId: string;
   candidateSummary: string;
   actionSafetyLevel: SafetyLevel;
   credibilityLevel: DraftCredibilityLevel;
+  credibilityReason: string;
   reviewDecision: ReviewDecision;
+  decisionChecklist: DecisionChecklistItem[];
   reviewer: string;
   judgementBasis: string;
   humanCorrections: string;
@@ -62,6 +66,16 @@ const nextActionLabels: Record<NextActionDecision, string> = {
   handoff_for_decision: "交給人工決策",
   do_not_dispatch: "暫不派工",
 };
+
+const decisionChecklistItems: Array<{
+  id: DecisionChecklistItem;
+  label: string;
+}> = [
+  { id: "source_checked", label: "已檢查來源與轉述關係" },
+  { id: "time_checked", label: "已檢查時間仍可能有效" },
+  { id: "location_checked", label: "已檢查地點或範圍足夠清楚" },
+  { id: "not_auto_dispatch", label: "已確認這不是自動派工決策" },
+];
 
 function includesAny(text: string, keywords: string[]) {
   return keywords.some((keyword) => text.includes(keyword));
@@ -162,11 +176,27 @@ function createDraft(
     candidateSummary: autoCheck.candidateSummary,
     actionSafetyLevel: autoCheck.actionSafetyLevel,
     credibilityLevel: autoCheck.credibilityLevel,
+    credibilityReason: "",
     reviewDecision: "not_adopted",
+    decisionChecklist: [],
     reviewer: "",
     judgementBasis: record.rawText,
     humanCorrections: "",
   };
+}
+
+function isDecisionChecklistComplete(draft: V1Draft) {
+  return decisionChecklistItems.every((item) =>
+    draft.decisionChecklist.includes(item.id),
+  );
+}
+
+function canPrepareForDecision(draft: V1Draft) {
+  const hasCredibilityReason =
+    draft.credibilityLevel !== "confirmed_true" ||
+    draft.credibilityReason.trim().length > 0;
+
+  return hasCredibilityReason && isDecisionChecklistComplete(draft);
 }
 
 export function V1Workbench({ records }: { records: Phase0MessyRecord[] }) {
@@ -211,6 +241,45 @@ export function V1Workbench({ records }: { records: Phase0MessyRecord[] }) {
     const baseDraft =
       selectedDraft ?? createDraft(selectedRecord, selectedAutoCheck);
     upsertDraft({ ...baseDraft, ...patch });
+  }
+
+  function updateReviewDecision(reviewDecision: ReviewDecision) {
+    const baseDraft =
+      selectedDraft ?? createDraft(selectedRecord, selectedAutoCheck);
+
+    if (
+      reviewDecision === "ready_for_decision" &&
+      !canPrepareForDecision(baseDraft)
+    ) {
+      return;
+    }
+
+    upsertDraft({ ...baseDraft, reviewDecision });
+  }
+
+  function updateDecisionChecklist(
+    itemId: DecisionChecklistItem,
+    isChecked: boolean,
+  ) {
+    const baseDraft =
+      selectedDraft ?? createDraft(selectedRecord, selectedAutoCheck);
+    const nextChecklist = isChecked
+      ? Array.from(new Set([...baseDraft.decisionChecklist, itemId]))
+      : baseDraft.decisionChecklist.filter((item) => item !== itemId);
+
+    const nextDraft = {
+      ...baseDraft,
+      decisionChecklist: nextChecklist,
+    };
+
+    upsertDraft({
+      ...nextDraft,
+      reviewDecision:
+        nextDraft.reviewDecision === "ready_for_decision" &&
+        !canPrepareForDecision(nextDraft)
+          ? "not_adopted"
+          : nextDraft.reviewDecision,
+    });
   }
 
   function resetDraft() {
@@ -411,14 +480,26 @@ export function V1Workbench({ records }: { records: Phase0MessyRecord[] }) {
                   </select>
                 </label>
 
+                {selectedDraft.credibilityLevel === "confirmed_true" ? (
+                  <label>
+                    人工確認依據
+                    <textarea
+                      rows={3}
+                      value={selectedDraft.credibilityReason}
+                      onChange={(event) =>
+                        updateDraft({ credibilityReason: event.target.value })
+                      }
+                      placeholder="寫下你如何確認這筆資料為真實，例如確認來源、時間與原文依據。"
+                    />
+                  </label>
+                ) : null}
+
                 <label>
                   最後人工確認結果
                   <select
                     value={selectedDraft.reviewDecision}
                     onChange={(event) =>
-                      updateDraft({
-                        reviewDecision: event.target.value as ReviewDecision,
-                      })
+                      updateReviewDecision(event.target.value as ReviewDecision)
                     }
                   >
                     <option value="pending">未審查</option>
@@ -426,9 +507,33 @@ export function V1Workbench({ records }: { records: Phase0MessyRecord[] }) {
                     <option value="adopt_as_unconfirmed">
                       採用為未確認整理草稿
                     </option>
-                    <option value="ready_for_decision">準備下決策</option>
+                    <option
+                      disabled={!canPrepareForDecision(selectedDraft)}
+                      value="ready_for_decision"
+                    >
+                      準備下決策
+                    </option>
                   </select>
                 </label>
+
+                <fieldset className="v1-draft-form__wide v1-checklist">
+                  <legend>決策前檢查清單</legend>
+                  {decisionChecklistItems.map((item) => (
+                    <label key={item.id}>
+                      <input
+                        checked={selectedDraft.decisionChecklist.includes(
+                          item.id,
+                        )}
+                        type="checkbox"
+                        onChange={(event) =>
+                          updateDecisionChecklist(item.id, event.target.checked)
+                        }
+                      />
+                      {item.label}
+                    </label>
+                  ))}
+                  <p>全部完成後，最後人工確認結果才可以選「準備下決策」。</p>
+                </fieldset>
 
                 <label>
                   判斷者

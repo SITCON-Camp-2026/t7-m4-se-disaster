@@ -230,6 +230,9 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("資料可信度"), {
       target: { value: "confirmed_true" },
     });
+    fireEvent.change(screen.getByLabelText("人工確認依據"), {
+      target: { value: "由整理者回看原文、來源與時間後留下的確認依據。" },
+    });
     fireEvent.change(screen.getByLabelText("判斷者"), {
       target: { value: "資訊整理者 A" },
     });
@@ -241,6 +244,9 @@ describe("App", () => {
 
     expect(screen.getAllByText("人工確認為真實").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("資料可信度")).toHaveValue("confirmed_true");
+    expect(screen.getByLabelText("人工確認依據")).toHaveValue(
+      "由整理者回看原文、來源與時間後留下的確認依據。",
+    );
     expect(screen.getByLabelText("最後人工確認結果")).toHaveValue(
       "adopt_as_unconfirmed",
     );
@@ -264,6 +270,10 @@ describe("App", () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "建立 v1 整理草稿" }));
+    fireEvent.click(screen.getByLabelText("已檢查來源與轉述關係"));
+    fireEvent.click(screen.getByLabelText("已檢查時間仍可能有效"));
+    fireEvent.click(screen.getByLabelText("已檢查地點或範圍足夠清楚"));
+    fireEvent.click(screen.getByLabelText("已確認這不是自動派工決策"));
     fireEvent.change(screen.getByLabelText("最後人工確認結果"), {
       target: { value: "ready_for_decision" },
     });
@@ -279,5 +289,20 @@ describe("App", () => {
       "ask_for_key_info",
     );
     expect(screen.getByText(/不自動派工或做真實救災決策/)).toBeInTheDocument();
+  });
+
+  it("requires the decision checklist before passing data forward", () => {
+    window.history.pushState({}, "", "/v1/");
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "建立 v1 整理草稿" }));
+    fireEvent.change(screen.getByLabelText("最後人工確認結果"), {
+      target: { value: "ready_for_decision" },
+    });
+
+    expect(screen.getByLabelText("最後人工確認結果")).toHaveValue(
+      "not_adopted",
+    );
+    expect(screen.getByText("0 筆待決策")).toBeInTheDocument();
   });
 });
